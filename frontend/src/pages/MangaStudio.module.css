@@ -1,0 +1,147 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--paper-1);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── 顶栏 ──────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  background: var(--paper-2);
+  border-bottom: var(--border-sm);
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.titleIcon { font-size: 18px; }
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.activeTitle {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--ink-2);
+  border-left: var(--border-dim);
+  padding-left: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* ── Tabs ──────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--paper-3);
+  border: var(--border-sm);
+  padding: 2px;
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  border: none;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all .12s;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tabBtn:hover { background: var(--paper-2); color: var(--ink-0); }
+
+.tabActive {
+  background: var(--ink-0) !important;
+  color: var(--paper-1) !important;
+}
+
+.jobDot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: blink 1.5s ease infinite;
+  flex-shrink: 0;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* ── 主体 ──────────────────────────────────────── */
+.body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+
+.twoCol {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.leftCol {
+  width: 340px;
+  flex-shrink: 0;
+  border-right: var(--border-sm);
+  overflow-y: auto;
+  background: var(--paper-2);
+}
+
+.rightCol {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--paper-1);
+}
+
+/* ── 占位符 ────────────────────────────────────── */
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  padding: 40px;
+  text-align: center;
+}
+
+.placeholderIcon { font-size: 48px; opacity: .25; }
+
+.placeholderTitle {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-1);
+}
+
+.placeholderSub {
+  font-size: 13px;
+  color: var(--ink-3);
+  line-height: 1.7;
+  max-width: 260px;
+}

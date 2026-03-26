@@ -3,7 +3,7 @@
 """
 from __future__ import annotations
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from enum import Enum
 import uuid, time
 
@@ -41,7 +41,7 @@ class MessageRole(str, Enum):
 class WorldCharacter(BaseModel):
     name:         str = ""
     role:         str = ""  # protagonist / supporting / antagonist / mentor
-    age:          str = ""  # 年龄描述，如 "28岁" 或 "青年"
+    age:          str = ""  # 年龄描述，如 "28岁" 或 "青年"（兼容 LLM 返回 int）
     description:  str = ""
     background:   str = ""
     personality:  str = ""
@@ -50,6 +50,11 @@ class WorldCharacter(BaseModel):
     flaw:         str = ""
     relationship: str = ""  # 与主角的关系（配角用）
     appearance:   str = ""  # 外貌描述
+
+    @field_validator("age", mode="before")
+    @classmethod
+    def coerce_age(cls, v):
+        return str(v) if v is not None else ""
 
 
 class WorldSetting(BaseModel):

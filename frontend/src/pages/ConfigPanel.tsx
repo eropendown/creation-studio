@@ -5,16 +5,27 @@ import s from './ConfigPanel.module.css'
 
 type Section = 'llm' | 'tts' | 'video' | 'prompts'
 
+interface LlmPreset {
+  name: string
+  base_url: string
+  model: string
+  description: string
+}
+
 export default function ConfigPanel() {
   const { config, configLoaded, loadConfig, saveConfig } = useMangaStore()
   const [draft, setDraft] = useState<SystemConfig | null>(null)
   const [section, setSection] = useState<Section>('llm')
   const [saved, setSaved] = useState(false)
+  const [presets, setPresets] = useState<LlmPreset[]>([])
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => { if (!configLoaded) loadConfig() }, [])
   useEffect(() => { if (config) setDraft(JSON.parse(JSON.stringify(config))) }, [config])
   useEffect(() => { return () => { if (timerRef.current) clearTimeout(timerRef.current) } }, [])
+  useEffect(() => {
+    fetch('/api/llm/presets').then(r => r.json()).then(d => setPresets(d.presets || [])).catch(() => {})
+  }, [])
 
   const handleSave = async () => {
     if (!draft) return
@@ -28,6 +39,10 @@ export default function ConfigPanel() {
   const setTts  = (k: string, v: unknown) => setDraft(d => d ? { ...d, tts:   { ...d.tts,   [k]: v } } : d)
   const setVideo = (k: string, v: unknown) => setDraft(d => d ? { ...d, video: { ...d.video, [k]: v } } : d)
   const setPrompt = (k: string, v: string) => setDraft(d => d ? { ...d, prompts: { ...d.prompts, [k]: v } } : d)
+
+  const applyPreset = (p: LlmPreset) => {
+    setDraft(d => d ? { ...d, llm: { ...d.llm, provider: 'real', base_url: p.base_url, model: p.model } } : d)
+  }
 
   if (!draft) {
     return (
@@ -81,40 +96,66 @@ export default function ConfigPanel() {
         <div className={s.content}>
           {section === 'llm' && (
             <Section title="🧠 LLM 大语言模型">
-              <Row label="提供商">
+              <Row label="模式">
                 <select
                   className="select"
                   value={draft.llm.provider}
                   onChange={e => setLlm('provider', e.target.value)}
                 >
+                  <option value="real">真实模型</option>
                   <option value="mock">Mock（测试用）</option>
-                  <option value="openai">OpenAI</option>
-                  <option value="deepseek">DeepSeek</option>
                 </select>
               </Row>
-              <Row label="API Key">
-                <input
-                  type="password" className="input input-mono"
-                  value={draft.llm.api_key}
-                  onChange={e => setLlm('api_key', e.target.value)}
-                  placeholder="sk-..."
-                />
-              </Row>
-              <Row label="Base URL">
-                <input
-                  type="text" className="input input-mono"
-                  value={draft.llm.base_url}
-                  onChange={e => setLlm('base_url', e.target.value)}
-                />
-              </Row>
-              <Row label="模型名称">
-                <input
-                  type="text" className="input input-mono"
-                  value={draft.llm.model}
-                  onChange={e => setLlm('model', e.target.value)}
-                  placeholder="gpt-4o-mini / deepseek-chat"
-                />
-              </Row>
+
+              {draft.llm.provider !== 'mock' && (
+                <>
+                  <Row label="快速选择">
+                    <div className={s.presetGrid}>
+                      {presets.map(p => (
+                        <button
+                          key={p.name}
+                          className={`${s.presetBtn} ${draft.llm.base_url === p.base_url && draft.llm.model === p.model ? s.presetActive : ''}`}
+                          onClick={() => applyPreset(p)}
+                          title={p.description}
+                        >
+                          <span className={s.presetName}>{p.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </Row>
+
+                  <Row label="Base URL">
+                    <input
+                      type="text" className="input input-mono"
+                      value={draft.llm.base_url}
+                      onChange={e => setLlm('base_url', e.target.value)}
+                      placeholder="https://api.example.com/v1"
+                    />
+                  </Row>
+                  <Row label="模型名称">
+                    <input
+                      type="text" className="input input-mono"
+                      value={draft.llm.model}
+                      onChange={e => setLlm('model', e.target.value)}
+                      placeholder="deepseek-chat / qwen-plus / ..."
+                    />
+                  </Row>
+                  <Row label="API Key">
+                    <input
+                      type="password" className="input input-mono"
+                      value={draft.llm.api_key}
+                      onChange={e => setLlm('api_key', e.target.value)}
+                      placeholder="sk-..."
+                    />
+                  </Row>
+
+                  <div className={s.hint}>
+                    💡 兼容所有 OpenAI 协议的模型服务。点击上方预设按钮快速配置，
+                    或手动填写 Base URL + 模型名称。支持 DeepSeek / 通义千问 / 智谱 / Kimi / 豆包 / Ollama 等。
+                  </div>
+                </>
+              )}
+
               <Row label={`Temperature: ${draft.llm.temperature}`}>
                 <input
                   type="range" min="0" max="2" step="0.1"
@@ -131,13 +172,6 @@ export default function ConfigPanel() {
                   className={s.range}
                 />
               </Row>
-
-              {draft.llm.provider !== 'mock' && (
-                <div className={s.hint}>
-                  ⚠️ DeepSeek 用户请将 Base URL 设为 <code>https://api.deepseek.com/v1</code>
-                  ，模型名设为 <code>deepseek-chat</code>
-                </div>
-              )}
             </Section>
           )}
 

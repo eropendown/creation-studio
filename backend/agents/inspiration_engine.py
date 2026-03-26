@@ -187,7 +187,8 @@ _MOCK_CARDS = {
 
 class InspirationEngine:
     def __init__(self, llm_cfg: dict):
-        self.llm_cfg = llm_cfg
+        from core.llm import LLMClient
+        self.llm = LLMClient(llm_cfg)
 
     async def get_inspiration(self, idea: str) -> InspirationResult:
         """
@@ -212,30 +213,19 @@ class InspirationEngine:
         return result
 
     async def _generate(self, idea: str) -> InspirationResult:
-        provider = self.llm_cfg.get("provider", "mock")
-
-        if provider == "mock":
+        if self.llm._is_mock:
             await asyncio.sleep(0.3)
             mock = _MOCK_CARDS["default"]
             mock.query = idea
             return mock
 
         try:
-            from openai import AsyncOpenAI
-            client = AsyncOpenAI(
-                api_key=self.llm_cfg.get("api_key"),
-                base_url=self.llm_cfg.get("base_url", "https://api.openai.com/v1"),
-            )
-            resp = await client.chat.completions.create(
-                model=self.llm_cfg.get("model", "gpt-4o-mini"),
-                messages=[
-                    {"role": "system", "content": _SYSTEM},
-                    {"role": "user",   "content": f"用户的创意：\n\n{idea[:1500]}"},
-                ],
+            raw = await self.llm.chat(
+                _SYSTEM,
+                f"用户的创意：\n\n{idea[:1500]}",
                 temperature=0.7,
                 max_tokens=2000,
             )
-            raw = resp.choices[0].message.content.strip()
             return self._parse(idea, raw)
 
         except Exception as e:

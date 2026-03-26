@@ -38,22 +38,10 @@ STYLE_EN = {
 
 async def _llm(system: str, user: str, cfg: SystemConfig, label="") -> str:
     """单次 LLM 调用，返回原始文本"""
-    from openai import AsyncOpenAI
-    llm = cfg.llm
-    client = AsyncOpenAI(api_key=llm.api_key, base_url=llm.base_url)
+    from core.llm import LLMClient
+    llm = LLMClient.from_system_config(cfg)
     log.info(f"LLM call [{label}] model={llm.model} max_tokens={llm.max_tokens}")
-    resp = await client.chat.completions.create(
-        model=llm.model,
-        messages=[{"role":"system","content":system},{"role":"user","content":user}],
-        temperature=llm.temperature,
-        max_tokens=llm.max_tokens,
-        timeout=llm.timeout,
-    )
-    txt = resp.choices[0].message.content.strip()
-    finish = resp.choices[0].finish_reason
-    if finish == "length":
-        log.warning(f"[{label}] TRUNCATED by max_tokens! Consider increasing max_tokens or reducing batch size.")
-    return txt
+    return await llm.chat(system, user, max_tokens=cfg.llm.max_tokens)
 
 
 def _parse_json(raw: str, label="") -> dict | list:

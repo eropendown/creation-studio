@@ -56,6 +56,12 @@ async def api_save_config(req: SaveConfigRequest): return save_config(req.config
 @app.post("/api/config/reset", response_model=SystemConfig)
 async def api_reset_config(): return reset_config()
 
+@app.get("/api/llm/presets")
+async def api_llm_presets():
+    """返回社区推荐的预设模型列表（支持所有 OpenAI 兼容协议）"""
+    from core.llm import PRESET_MODELS
+    return {"presets": PRESET_MODELS}
+
 
 # ════════════════════════════════════════════════════════
 #  漫剧大纲 API
@@ -286,17 +292,22 @@ async def api_download(jid: str):
 #  小说写作 Agent API  (NEW)
 # ════════════════════════════════════════════════════════
 
-def _get_novel_agent() -> NovelAgent:
+def _llm_cfg() -> dict:
+    """统一构造 LLM 配置字典，供所有 Agent 使用"""
     cfg = get_config()
-    llm_cfg = {
+    return {
         "provider":    cfg.llm.provider,
         "api_key":     cfg.llm.api_key,
         "base_url":    cfg.llm.base_url,
         "model":       cfg.llm.model,
         "temperature": cfg.llm.temperature,
         "max_tokens":  cfg.llm.max_tokens,
+        "timeout":     cfg.llm.timeout,
     }
-    return NovelAgent(llm_cfg)
+
+
+def _get_novel_agent() -> NovelAgent:
+    return NovelAgent(_llm_cfg())
 
 
 # ── 灵感服务 ──────────────────────────────────────────────
@@ -360,14 +371,7 @@ async def api_novel_inspiration(req: InspirationRequest):
     """
     try:
         from agents.inspiration_engine import InspirationEngine
-        cfg = get_config()
-        llm_cfg = {
-            "provider": cfg.llm.provider,
-            "api_key":  cfg.llm.api_key,
-            "base_url": cfg.llm.base_url,
-            "model":    cfg.llm.model,
-        }
-        engine = InspirationEngine(llm_cfg)
+        engine = InspirationEngine(_llm_cfg())
         result = await engine.get_inspiration(req.idea)
         return result.to_dict()
     except Exception as e:
@@ -441,13 +445,6 @@ async def api_review_chapter(sid: str, chapter_num: int):
         raise HTTPException(400, "该章节暂无内容可评审")
 
     from agents.quality_reviewer import QualityReviewer
-    cfg = get_config()
-    llm_cfg = {
-        "provider": cfg.llm.provider,
-        "api_key":  cfg.llm.api_key,
-        "base_url": cfg.llm.base_url,
-        "model":    cfg.llm.model,
-    }
 
     content = chapter.full_content or "\n\n".join(sc.content for sc in chapter.scenes if sc.content)
     wv_text = ""
@@ -459,7 +456,7 @@ async def api_review_chapter(sid: str, chapter_num: int):
         if prev_ch and prev_ch.full_content:
             prev_ending = prev_ch.full_content[-300:]
 
-    reviewer = QualityReviewer(llm_cfg)
+    reviewer = QualityReviewer(_llm_cfg())
     review = await reviewer.review_chapter(
         chapter_content=content,
         chapter_num=chapter_num,
@@ -562,14 +559,7 @@ class ToolCallRequest(BaseModel):
 async def api_tool_call(req: ToolCallRequest):
     """直接测试工具调用"""
     from agents.agent_tools import AgentToolkit
-    cfg = get_config()
-    llm_cfg = {
-        "provider": cfg.llm.provider,
-        "api_key":  cfg.llm.api_key,
-        "base_url": cfg.llm.base_url,
-        "model":    cfg.llm.model,
-    }
-    toolkit = AgentToolkit(llm_cfg)
+    toolkit = AgentToolkit(_llm_cfg())
     result  = await toolkit.call(req.tool, req.query)
     return {
         "tool":    result.tool,

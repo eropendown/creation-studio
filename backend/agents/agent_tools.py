@@ -238,9 +238,10 @@ async def knowledge_check(claim: str, llm_cfg: dict) -> ToolResult:
 - 只陈述事实，不做价值判断
 - 涉及前沿科学时注明知识截止年份"""
 
-    provider = llm_cfg.get("provider", "mock")
+    from core.llm import LLMClient
+    llm = LLMClient(llm_cfg)
 
-    if provider == "mock":
+    if llm._is_mock:
         content = (
             f"## 核查结论\n? 无法确认（Mock模式）\n\n"
             f"## 事实说明\n当前为 Mock 模式，无法进行实际知识核查。\n"
@@ -253,22 +254,12 @@ async def knowledge_check(claim: str, llm_cfg: dict) -> ToolResult:
         )
 
     try:
-        from openai import AsyncOpenAI
-        client = AsyncOpenAI(
-            api_key=llm_cfg.get("api_key"),
-            base_url=llm_cfg.get("base_url", "https://api.openai.com/v1"),
-        )
-        resp = await client.chat.completions.create(
-            model=llm_cfg.get("model", "gpt-4o-mini"),
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": f"请核查以下内容的准确性：\n\n{claim}"},
-            ],
-            temperature=0.1,   # 低温度确保严谨
+        content = await llm.chat(
+            system,
+            f"请核查以下内容的准确性：\n\n{claim}",
+            temperature=0.1,
             max_tokens=800,
         )
-        content = resp.choices[0].message.content.strip()
-        # 提取结论行作为摘要
         conclusion_match = re.search(r"\[([✓⚠✗?][^\]]*)\]", content)
         summary = conclusion_match.group(1) if conclusion_match else content[:60]
 

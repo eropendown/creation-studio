@@ -98,7 +98,8 @@ class QualityReviewer:
     """质量评审 Agent"""
 
     def __init__(self, llm_cfg: dict):
-        self.llm_cfg = llm_cfg
+        from core.llm import LLMClient
+        self.llm = LLMClient(llm_cfg)
 
     async def review_chapter(
         self,
@@ -109,18 +110,10 @@ class QualityReviewer:
         prev_chapter_ending: str = "",
     ) -> ChapterReview:
         """评审单个章节"""
-        provider = self.llm_cfg.get("provider", "mock")
-
-        if provider == "mock":
+        if self.llm._is_mock:
             return self._mock_review(chapter_num)
 
         try:
-            from openai import AsyncOpenAI
-            client = AsyncOpenAI(
-                api_key=self.llm_cfg.get("api_key"),
-                base_url=self.llm_cfg.get("base_url", "https://api.openai.com/v1"),
-            )
-
             user_msg = f"## 第{chapter_num}章《{chapter_title}》\n\n"
             if worldview_text:
                 user_msg += f"### 世界观设定\n{worldview_text[:500]}\n\n"
@@ -128,16 +121,11 @@ class QualityReviewer:
                 user_msg += f"### 上一章结尾\n{prev_chapter_ending[-300:]}\n\n"
             user_msg += f"### 本章正文\n{chapter_content[:4000]}"
 
-            resp = await client.chat.completions.create(
-                model=self.llm_cfg.get("model", "gpt-4o-mini"),
-                messages=[
-                    {"role": "system", "content": _SYSTEM},
-                    {"role": "user", "content": user_msg},
-                ],
+            raw = await self.llm.chat(
+                _SYSTEM, user_msg,
                 temperature=0.3,
                 max_tokens=1500,
             )
-            raw = resp.choices[0].message.content.strip()
             return self._parse(chapter_num, raw)
 
         except Exception as e:

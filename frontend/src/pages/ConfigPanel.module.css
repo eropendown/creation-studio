@@ -208,3 +208,38 @@
   font-weight: 700;
   color: var(--ink-0);
 }
+
+/* 预设模型网格 */
+.presetGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.presetBtn {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  background: var(--paper-2);
+  border: 1.5px solid var(--ink-4);
+  color: var(--ink-1);
+  cursor: pointer;
+  transition: all .12s;
+  white-space: nowrap;
+}
+
+.presetBtn:hover {
+  border-color: var(--ink-1);
+  color: var(--ink-0);
+  background: var(--paper-1);
+}
+
+.presetActive {
+  border-color: var(--red) !important;
+  color: var(--red) !important;
+  background: var(--red-light) !important;
+}
+
+.presetName {
+  font-weight: 600;
+}

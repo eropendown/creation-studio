@@ -43,8 +43,14 @@ export interface JobStatus {
 
 export interface SystemConfig {
   llm: { provider: string; api_key: string; base_url: string; model: string; temperature: number; max_tokens: number }
-  tts: { provider: string; api_key: string; voice_id: string; speed: number }
-  video: { mode: string; fps: number; resolution: string; subtitle_enabled: boolean }
+  tts: {
+    provider: string; api_key: string; voice_id: string; speed: number; model: string; language: string
+    volcengine_app_id: string; volcengine_access_key: string; volcengine_secret_key: string; volcengine_cluster: string
+  }
+  video: {
+    mode: string; fps: number; resolution: string; subtitle_enabled: boolean; subtitle_font_size: number
+    volcengine_api_key: string; volcengine_model: string; volcengine_base_url: string
+  }
   prompts: Record<string, string>
 }
 
@@ -105,6 +111,19 @@ export const mangaApi = {
     return res.json()
   },
 
+  uploadVideo: async (outlineId: string, sceneId: number, file: File) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch(`${BASE}/outline/${outlineId}/scene/${sceneId}/video`, {
+      method: 'POST', body: fd,
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.detail || `HTTP ${res.status}`)
+    }
+    return res.json()
+  },
+
   getConfig: () => get<SystemConfig>('/config'),
 
   saveConfig: (config: SystemConfig) =>
@@ -134,4 +153,13 @@ export const mangaApi = {
     post<{ tool: string; success: boolean; summary: string; content: string }>(
       '/tools/call', { tool, query }
     ),
+
+  /** 对小说章节进行质量评审 */
+  reviewChapter: (sessionId: string, chapterNum: number) =>
+    post<{
+      chapter_num: number; overall_score: number; grade: string
+      scores: { dimension: string; score: number; comment: string }[]
+      strengths: string[]; issues: string[]; suggestions: string[]
+      character_consistency: Record<string, { consistent: boolean; note: string }>
+    }>(`/novel/sessions/${sessionId}/chapters/${chapterNum}/review`, {}),
 }

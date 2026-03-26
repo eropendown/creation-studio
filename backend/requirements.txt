@@ -13,3 +13,4 @@ numpy==1.26.4
 python-dotenv==1.0.1
 websockets==12.0
 PyYAML==6.0.2
+edge-tts>=6.1.0

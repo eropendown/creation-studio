@@ -26,12 +26,17 @@ class LLMConfig(BaseModel):
     timeout:     int   = 120
 
 class TTSConfig(BaseModel):
-    provider:  str   = "mock"
+    provider:  str   = "edge_tts"
     api_key:   str   = ""
-    voice_id:  str   = "nova"
+    voice_id:  str   = "zh-CN-YunxiNeural"
     model:     str   = "tts-1"
     speed:     float = 1.0
     language:  str   = "zh"
+    # 火山引擎 TTS 专属字段
+    volcengine_app_id:      str = ""
+    volcengine_access_key:  str = ""
+    volcengine_secret_key:  str = ""
+    volcengine_cluster:     str = "volcano_tts"
 
 class VideoConfig(BaseModel):
     mode:               str  = "jianying"
@@ -39,6 +44,10 @@ class VideoConfig(BaseModel):
     resolution:         str  = "1920x1080"
     subtitle_enabled:   bool = True
     subtitle_font_size: int  = 32
+    # 火山引擎视频生成（Seedance）
+    volcengine_api_key:   str = ""
+    volcengine_model:     str = "seedance-2.0"
+    volcengine_base_url:  str = "https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks"
 
 class AgentPrompts(BaseModel):
     """全部可由前端编辑"""
@@ -149,6 +158,12 @@ class SceneItem(BaseModel):
     audio_path:         str   = ""
     audio_duration:     float = 0.0
     audio_uploaded:     bool  = False
+    # 视频（用户上传或系统生成）
+    video_path:         str   = ""
+    video_url:          str   = ""
+    video_uploaded:     bool  = False
+    video_task_id:      str   = ""   # 火山引擎异步任务 ID
+    video_status:       str   = ""   # generating | done | error
     # 状态
     status:             str   = "pending"  # pending|prompt_ready|image_uploaded|voiced|done
     error_msg:          str   = ""
@@ -215,6 +230,7 @@ class PipelineState(BaseModel):
     config:    Optional[SystemConfig]  = None
     agents:    Dict[str, AgentInfo] = Field(default_factory=lambda: {
         "voice_actor":  AgentInfo(name="voice_actor",  display_name="配音智能体", emoji="🎙️"),
+        "video_gen":    AgentInfo(name="video_gen",    display_name="视频生成",   emoji="🎥"),
         "video_editor": AgentInfo(name="video_editor", display_name="剪辑智能体", emoji="🎬"),
     })
     overall_status:     str   = "idle"
@@ -223,6 +239,8 @@ class PipelineState(BaseModel):
     created_at:         float = Field(default_factory=time.time)
     final_video_url:    str   = ""
     jianying_draft_dir: str   = ""
+    # 火山引擎视频生成任务
+    volcengine_tasks:   Dict[str, str] = Field(default_factory=dict)  # scene_id -> task_id
 
     def ws_payload(self) -> dict:
         return {

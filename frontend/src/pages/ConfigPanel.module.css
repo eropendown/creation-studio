@@ -194,3 +194,17 @@
 }
 
 .promptGroup { display: flex; flex-direction: column; gap: 5px; }
+
+/* 分隔线 */
+.divider {
+  height: 1px;
+  background: var(--ink-4);
+  margin: 4px 0;
+}
+
+.subSectionTitle {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-0);
+}

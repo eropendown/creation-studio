@@ -1,4 +1,4 @@
-"""漫剧 + 小说写作 多智能体 API v6"""
+"""漫剧 + 小说写作 多智能体 API v7 — edge-tts + 火山引擎视频生成"""
 import asyncio, logging, shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -19,7 +19,7 @@ from core.novel_models import NovelChatRequest, NovelChatResponse, NovelSessionS
 from core.novel_store import session_get, session_save, session_summary_list, session_delete
 from core.ws_manager import manager
 from agents.outline_gen import generate_outline, import_novel
-from agents.pipeline_agents import run_voice_actor, run_video_editor
+from agents.pipeline_agents import run_voice_actor, run_video_generator, run_video_editor
 from agents.novel_agent import NovelAgent
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -33,10 +33,10 @@ _JOBS: dict[str, PipelineState] = {}
 async def lifespan(app: FastAPI):
     for d in [OUTPUT_DIR, UPLOAD_DIR, "data", "data/outlines", "data/novel_sessions"]:
         Path(d).mkdir(parents=True, exist_ok=True)
-    log.info("Server ready — v6 (manga + novel)")
+    log.info("Server ready — v7 (edge-tts + volcengine video)")
     yield
 
-app = FastAPI(title="创作工作室·多智能体系统", version="6.0.0", lifespan=lifespan)
+app = FastAPI(title="创作工作室·多智能体系统", version="7.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
@@ -178,6 +178,33 @@ async def api_scene_image_url(oid: str, sid: int, req: ImageUploadRequest):
     return {"ok": True, "scene_id": sid}
 
 
+@app.post("/api/outline/{oid}/scene/{sid}/video")
+async def api_upload_scene_video(oid: str, sid: int, file: UploadFile = File(...)):
+    """上传场景视频（支持 mp4/mov/webm）"""
+    o = outline_get(oid)
+    if not o: raise HTTPException(404, "Outline not found")
+    sc = next((s for s in o.scene_breakdown if s.scene_id == sid), None)
+    if not sc: raise HTTPException(404, f"Scene {sid} not found")
+
+    allowed = {".mp4", ".mov", ".webm", ".avi", ".mkv"}
+    ext = Path(file.filename).suffix.lower()
+    if ext not in allowed:
+        raise HTTPException(400, f"不支持的视频格式: {ext}，支持: {', '.join(allowed)}")
+
+    save_dir = Path(UPLOAD_DIR) / oid
+    save_dir.mkdir(parents=True, exist_ok=True)
+    save_path = save_dir / f"scene_{sid:02d}{ext}"
+    content   = await file.read()
+    save_path.write_bytes(content)
+
+    sc.video_path     = str(save_path)
+    sc.video_url      = f"/uploads/{oid}/scene_{sid:02d}{ext}"
+    sc.video_uploaded = True
+    sc.video_status   = "done"
+    outline_save(o)
+    return {"ok": True, "video_url": sc.video_url, "scene_id": sid}
+
+
 # ════════════════════════════════════════════════════════
 #  漫剧生成流水线 API
 # ════════════════════════════════════════════════════════
@@ -192,9 +219,17 @@ async def _run_pipeline(job_id: str, outline: ScriptOutline, cfg: SystemConfig):
         await manager.broadcast(obj.job_id, {"type": "state_update", **obj.ws_payload()})
 
     try:
+        # 步骤1: 配音
         await run_voice_actor(state, push, cfg, OUTPUT_DIR)
-        state.overall_progress = 60
+        state.overall_progress = 40
         await push()
+
+        # 步骤2: AI 视频生成（火山引擎 Seedance，可选）
+        await run_video_generator(state, push, cfg, OUTPUT_DIR)
+        state.overall_progress = 70
+        await push()
+
+        # 步骤3: 剪辑合成
         await run_video_editor(state, push, cfg, OUTPUT_DIR)
     except Exception as e:
         log.exception(f"Pipeline error: {e}")
@@ -394,6 +429,53 @@ async def api_novel_export(sid: str):
     )
 
 
+@app.post("/api/novel/sessions/{sid}/chapters/{chapter_num}/review")
+async def api_review_chapter(sid: str, chapter_num: int):
+    """对指定章节进行质量评审"""
+    s = session_get(sid)
+    if not s: raise HTTPException(404, "Session not found")
+
+    chapter = next((c for c in s.chapters if c.chapter_num == chapter_num), None)
+    if not chapter: raise HTTPException(404, f"第{chapter_num}章不存在")
+    if not chapter.full_content and not any(sc.content for sc in chapter.scenes):
+        raise HTTPException(400, "该章节暂无内容可评审")
+
+    from agents.quality_reviewer import QualityReviewer
+    cfg = get_config()
+    llm_cfg = {
+        "provider": cfg.llm.provider,
+        "api_key":  cfg.llm.api_key,
+        "base_url": cfg.llm.base_url,
+        "model":    cfg.llm.model,
+    }
+
+    content = chapter.full_content or "\n\n".join(sc.content for sc in chapter.scenes if sc.content)
+    wv_text = ""
+    if s.worldview:
+        wv_text = f"{s.worldview.genre} | {s.worldview.core_theme}"
+    prev_ending = ""
+    if chapter_num > 1:
+        prev_ch = next((c for c in s.chapters if c.chapter_num == chapter_num - 1), None)
+        if prev_ch and prev_ch.full_content:
+            prev_ending = prev_ch.full_content[-300:]
+
+    reviewer = QualityReviewer(llm_cfg)
+    review = await reviewer.review_chapter(
+        chapter_content=content,
+        chapter_num=chapter_num,
+        chapter_title=chapter.title,
+        worldview_text=wv_text,
+        prev_chapter_ending=prev_ending,
+    )
+
+    # 存储评审结果
+    chapter.review_score = review.overall_score
+    chapter.review_data  = review.to_dict()
+    session_save(s)
+
+    return review.to_dict()
+
+
 # ════════════════════════════════════════════════════════
 #  小说 → 漫剧 直通导入  (NEW)
 # ════════════════════════════════════════════════════════
@@ -530,8 +612,8 @@ async def ws_manga(ws: WebSocket, jid: str):
 async def health():
     return {
         "status":  "ok",
-        "version": "6.0.0",
-        "modules": ["manga", "novel"],
+        "version": "7.0.0",
+        "modules": ["manga", "novel", "edge-tts", "volcengine-video"],
     }
 
 

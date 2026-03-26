@@ -562,6 +562,36 @@ class NovelAgent:
                     ch_outline.actual_word_count = chapter.word_count
                     ch_outline.status = "done"
 
+        # 自动质量评审（异步，不阻塞）
+        review_info = ""
+        try:
+            from agents.quality_reviewer import QualityReviewer
+            reviewer = QualityReviewer(self.llm_cfg)
+            wv_text = ""
+            if session.worldview:
+                wv_text = f"{session.worldview.genre} | {session.worldview.core_theme}"
+            prev_ending = ""
+            if len(session.chapters) > 1:
+                prev_ch = session.chapters[-2]
+                if prev_ch.full_content:
+                    prev_ending = prev_ch.full_content[-300:]
+
+            review = await reviewer.review_chapter(
+                chapter_content=chapter.full_content,
+                chapter_num=chapter.chapter_num,
+                chapter_title=chapter.title,
+                worldview_text=wv_text,
+                prev_chapter_ending=prev_ending,
+            )
+            chapter.review_score = review.overall_score
+            chapter.review_data  = review.to_dict()
+            review_info = f"\n📝 **质量评分：{review.overall_score}/10 ({review.grade})**"
+            if review.suggestions:
+                review_info += f"\n💡 建议：{review.suggestions[0]}"
+            session.log(f"第{chapter.chapter_num}章质量评审完成：{review.overall_score}/10")
+        except Exception as e:
+            log.warning(f"Auto review failed: {e}")
+
         completed_count = sum(1 for c in session.chapters if c.status == "done")
         update_msg = ""
         if completed_count > 0 and completed_count % 3 == 0 and session.outline:
@@ -579,7 +609,7 @@ class NovelAgent:
 
         reply = (
             f"🎉 第{chapter.chapter_num}章《{chapter.title}》创作完成！\n"
-            f"共{len(chapter.scenes)}个场景，约**{chapter.word_count}字**。{update_msg}\n\n"
+            f"共{len(chapter.scenes)}个场景，约**{chapter.word_count}字**。{review_info}{update_msg}\n\n"
             "输入「下一章」继续创作，或告诉我需要修改的地方。"
         )
         return reply, {"chapter": chapter.model_dump(), "completed": completed_count}

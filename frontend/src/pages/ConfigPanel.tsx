@@ -149,27 +149,101 @@ export default function ConfigPanel() {
                   value={draft.tts.provider}
                   onChange={e => setTts('provider', e.target.value)}
                 >
-                  <option value="mock">Mock（测试用）</option>
+                  <option value="edge_tts">Edge TTS（免费推荐）</option>
                   <option value="openai">OpenAI TTS</option>
                   <option value="elevenlabs">ElevenLabs</option>
+                  <option value="volcengine">火山引擎 TTS</option>
+                  <option value="mock">Mock（测试用）</option>
                 </select>
               </Row>
-              <Row label="API Key">
-                <input
-                  type="password" className="input input-mono"
-                  value={draft.tts.api_key}
-                  onChange={e => setTts('api_key', e.target.value)}
-                  placeholder="API 密钥"
-                />
-              </Row>
-              <Row label="Voice ID / 音色">
-                <input
-                  type="text" className="input input-mono"
-                  value={draft.tts.voice_id}
-                  onChange={e => setTts('voice_id', e.target.value)}
-                  placeholder="nova / alloy / shimmer 或 ElevenLabs Voice ID"
-                />
-              </Row>
+
+              {draft.tts.provider === 'edge_tts' && (
+                <>
+                  <Row label="中文音色">
+                    <select
+                      className="select"
+                      value={draft.tts.voice_id}
+                      onChange={e => setTts('voice_id', e.target.value)}
+                    >
+                      <option value="zh-CN-YunxiNeural">云希（元气男声）</option>
+                      <option value="zh-CN-YunjianNeural">云健（沉稳男声）</option>
+                      <option value="zh-CN-XiaoxiaoNeural">晓晓（活泼女声）</option>
+                      <option value="zh-CN-XiaoyiNeural">晓伊（温柔女声）</option>
+                      <option value="zh-CN-XiaochenNeural">晓辰（知性女声）</option>
+                      <option value="zh-CN-XiaohanNeural">晓涵（温暖女声）</option>
+                      <option value="zh-CN-YunyangNeural">云扬（新闻播报）</option>
+                      <option value="zh-CN-YunzeNeural">云泽（深沉男声）</option>
+                    </select>
+                  </Row>
+                  <div className={s.hint}>
+                    💡 Edge TTS 免费使用微软神经网络语音，中文效果优秀，无需 API Key。
+                    情绪会自动匹配不同音色。
+                  </div>
+                </>
+              )}
+
+              {(draft.tts.provider === 'openai' || draft.tts.provider === 'elevenlabs') && (
+                <>
+                  <Row label="API Key">
+                    <input
+                      type="password" className="input input-mono"
+                      value={draft.tts.api_key}
+                      onChange={e => setTts('api_key', e.target.value)}
+                      placeholder="API 密钥"
+                    />
+                  </Row>
+                  <Row label="Voice ID">
+                    <input
+                      type="text" className="input input-mono"
+                      value={draft.tts.voice_id}
+                      onChange={e => setTts('voice_id', e.target.value)}
+                      placeholder={draft.tts.provider === 'openai' ? 'nova / alloy / shimmer' : 'ElevenLabs Voice ID'}
+                    />
+                  </Row>
+                </>
+              )}
+
+              {draft.tts.provider === 'volcengine' && (
+                <>
+                  <Row label="App ID">
+                    <input
+                      type="text" className="input input-mono"
+                      value={draft.tts.volcengine_app_id}
+                      onChange={e => setTts('volcengine_app_id', e.target.value)}
+                      placeholder="火山引擎应用 ID"
+                    />
+                  </Row>
+                  <Row label="Access Key">
+                    <input
+                      type="password" className="input input-mono"
+                      value={draft.tts.volcengine_access_key}
+                      onChange={e => setTts('volcengine_access_key', e.target.value)}
+                      placeholder="Access Key"
+                    />
+                  </Row>
+                  <Row label="Secret Key">
+                    <input
+                      type="password" className="input input-mono"
+                      value={draft.tts.volcengine_secret_key}
+                      onChange={e => setTts('volcengine_secret_key', e.target.value)}
+                      placeholder="Secret Key"
+                    />
+                  </Row>
+                  <Row label="音色">
+                    <input
+                      type="text" className="input input-mono"
+                      value={draft.tts.voice_id}
+                      onChange={e => setTts('voice_id', e.target.value)}
+                      placeholder="zh_female_shuangkuaisisi_moon_bigtts"
+                    />
+                  </Row>
+                  <div className={s.hint}>
+                    💡 火山引擎 TTS 需开通语音合成服务，约 ¥0.02/千次调用。
+                    音色列表参考火山引擎控制台。
+                  </div>
+                </>
+              )}
+
               <Row label={`语速: ${draft.tts.speed}x`}>
                 <input
                   type="range" min="0.5" max="2.0" step="0.1"
@@ -228,9 +302,32 @@ export default function ConfigPanel() {
                 </label>
               </Row>
 
+              <div className={s.divider} />
+              <div className={s.subSectionTitle}>🎥 AI 视频生成（火山引擎 Seedance）</div>
+
+              <Row label="API Key">
+                <input
+                  type="password" className="input input-mono"
+                  value={draft.video.volcengine_api_key}
+                  onChange={e => setVideo('volcengine_api_key', e.target.value)}
+                  placeholder="火山方舟 API Key"
+                />
+              </Row>
+              <Row label="模型">
+                <select
+                  className="select"
+                  value={draft.video.volcengine_model}
+                  onChange={e => setVideo('volcengine_model', e.target.value)}
+                >
+                  <option value="seedance-2.0">Seedance 2.0（推荐）</option>
+                  <option value="seedance-1.0-pro">Seedance 1.0 Pro</option>
+                </select>
+              </Row>
+
               <div className={s.hint}>
-                💡 推荐使用「剪映草稿」模式：生成后将草稿目录导入剪映桌面版，
-                可在剪映中调整转场、配乐、字幕样式后导出。
+                💡 配置火山引擎 API Key 后，系统会对每个分镜场景自动生成视频片段。
+                未配置则跳过此步骤，使用用户上传的图片/视频。
+                <br/>📎 你也可以在分镜列表中直接上传视频，系统会优先使用已上传的素材。
               </div>
             </Section>
           )}

@@ -134,6 +134,9 @@ class Chapter(BaseModel):
     full_content: str   = ""   # 拼接所有场景内容
     word_count:   int   = 0
     status:       str   = "pending"  # pending | writing | done
+    # 质量评审
+    review_score: float = 0.0       # 综合评分
+    review_data:  Dict[str, Any] = {}  # 完整评审数据
     created_at:   float = Field(default_factory=time.time)
 
 

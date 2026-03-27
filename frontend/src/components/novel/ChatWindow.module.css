@@ -342,3 +342,43 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
+
+/* ════ 移动端响应式 ═══════════════════════════════ */
+@media (max-width: 767px) {
+  .messages {
+    padding: 10px 8px;
+    gap: 12px;
+  }
+
+  .bubble {
+    max-width: 95%;
+  }
+
+  .avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .avatarUser {
+    width: 26px;
+    height: 26px;
+    font-size: 10px;
+  }
+
+  .bubbleContent {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .streamingBar {
+    padding: 6px 10px;
+  }
+
+  .jumpBtn {
+    bottom: 8px;
+    right: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}

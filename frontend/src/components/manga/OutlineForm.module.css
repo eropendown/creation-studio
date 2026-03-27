@@ -113,3 +113,19 @@
 .logOk .logDot { background: var(--green); }
 .logErr { color: var(--red); }
 .logErr .logDot { background: var(--red); }
+
+/* ════ 移动端响应式 ═══════════════════════════════ */
+@media (max-width: 767px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+
+  .genreGrid {
+    gap: 4px;
+  }
+
+  .genreBtn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+}

@@ -269,3 +269,61 @@
   background: var(--paper-3);
   border-color: var(--ink-2);
 }
+/* ════ 移动端响应式 ═══════════════════════════════ */
+@media (max-width: 767px) {
+  .topbar {
+    padding: 0 10px;
+    min-height: 46px;
+  }
+
+  .topbarTitle {
+    font-size: 14px;
+  }
+
+  .body {
+    flex-direction: column;
+    position: relative;
+  }
+
+  .chatCol {
+    border-right: none;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .rightPanel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 64px;
+    width: 85vw;
+    max-width: 340px;
+    z-index: 800;
+    background: var(--paper-1);
+    border-left: var(--border);
+    transform: translateX(100%);
+    transition: transform .25s var(--ease);
+  }
+
+  .rightPanelOpen {
+    transform: translateX(0);
+  }
+
+  .inputArea {
+    padding: 6px 8px;
+  }
+
+  .chatInput {
+    min-height: 56px;
+  }
+
+  .welcomeDesc {
+    font-size: 13px;
+    padding: 0 16px;
+  }
+
+  .quickReplies {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}

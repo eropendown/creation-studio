@@ -243,3 +243,59 @@
 .presetName {
   font-weight: 600;
 }
+
+/* ════ 移动端响应式 ═══════════════════════════════ */
+@media (max-width: 767px) {
+  .topbar {
+    padding: 0 10px;
+    min-height: 46px;
+  }
+
+  .body {
+    flex-direction: column;
+  }
+
+  .sideNav {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-right: none;
+    border-bottom: var(--border);
+    position: relative;
+    height: auto;
+  }
+
+  .navBtn {
+    white-space: nowrap;
+    padding: 8px 14px;
+  }
+
+  .content {
+    padding: 12px;
+    max-width: 100%;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .rowLabel {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .rowControl {
+    width: 100%;
+  }
+
+  .presetGrid {
+    gap: 4px;
+  }
+
+  .presetBtn {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+}

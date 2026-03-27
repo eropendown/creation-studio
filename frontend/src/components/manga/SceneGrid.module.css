@@ -248,3 +248,31 @@
   gap: 5px;
   flex-wrap: wrap;
 }
+
+/* ════ 移动端响应式 ═══════════════════════════════ */
+@media (max-width: 767px) {
+  .outlineHeader {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .outlineMeta {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .synopsis {
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

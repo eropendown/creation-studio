@@ -1,4 +1,4 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import s from './Layout.module.css'
 
 const NAV = [
@@ -8,14 +8,15 @@ const NAV = [
 ]
 
 export default function Layout() {
+  const location = useLocation()
+
   return (
     <div className={s.root}>
       <aside className={s.sidebar}>
-        {/* 报头 */}
         <div className={s.masthead}>
           <div className={s.mastheadTop}>
             <span className={s.monogram}>◈</span>
-            <span className={s.version}>v6.0</span>
+            <span className={s.version}>v7.0</span>
           </div>
           <div className={s.title}>创作工作室</div>
           <div className={s.subtitle}>MULTI-AGENT STUDIO</div>
@@ -24,7 +25,6 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* 导航 */}
         <nav className={s.nav}>
           {NAV.map(n => (
             <NavLink
@@ -38,7 +38,6 @@ export default function Layout() {
           ))}
         </nav>
 
-        {/* 底部装饰 */}
         <div className={s.footer}>
           <div className={s.footerRule} />
           <p className={s.footerNote}>AI 创作辅助工具</p>
@@ -49,6 +48,21 @@ export default function Layout() {
       <main className={s.main}>
         <Outlet />
       </main>
+
+      {/* 移动端底部导航 */}
+      <nav className="mobile-nav">
+        <div className="mobile-nav-inner">
+          {NAV.map(n => (
+            <NavLink
+              key={n.to} to={n.to}
+              className={({ isActive }) => isActive ? 'active' : ''}
+            >
+              <span className="nav-emoji">{n.emoji}</span>
+              <span>{n.label}</span>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
     </div>
   )
 }

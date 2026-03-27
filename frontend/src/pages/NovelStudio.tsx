@@ -13,6 +13,7 @@ export default function NovelStudio() {
   const [input,        setInput]        = useState('')
   const [showSessions, setShowSessions] = useState(false)
   const [rightTab,     setRightTab]     = useState<RightTab>('inspiration')
+  const [panelOpen, setPanelOpen] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => { loadSessions() }, [])
@@ -120,7 +121,7 @@ export default function NovelStudio() {
         </div>
 
         {/* 右侧面板 */}
-        <aside className={s.rightPanel}>
+        <aside className={`${s.rightPanel} ${panelOpen ? s.rightPanelOpen : ''}`}>
           <div className={s.rightTabs}>
             <button
               className={`${s.rightTab} ${rightTab === 'inspiration' ? s.rightTabActive : ''}`}
@@ -142,6 +143,16 @@ export default function NovelStudio() {
             }
           </div>
         </aside>
+
+        {/* 移动端浮窗按钮 */}
+        <button className="mobile-panel-toggle" onClick={() => setPanelOpen(v => !v)}>
+          {panelOpen ? '✕' : '📋'}
+        </button>
+
+        {/* 移动端遮罩 */}
+        {panelOpen && (
+          <div className="mobile-overlay visible" onClick={() => setPanelOpen(false)} />
+        )}
       </div>
     </div>
   )

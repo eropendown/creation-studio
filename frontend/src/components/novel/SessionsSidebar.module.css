@@ -118,3 +118,17 @@
   color: var(--red);
   border-color: var(--red);
 }
+
+/* ════ 移动端响应式 ═══════════════════════════════ */
+@media (max-width: 767px) {
+  .root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 80vw;
+    max-width: 300px;
+    z-index: 900;
+    box-shadow: 4px 0 20px rgba(0,0,0,.15);
+  }
+}

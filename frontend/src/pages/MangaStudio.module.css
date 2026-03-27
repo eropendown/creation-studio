@@ -145,3 +145,45 @@
   line-height: 1.7;
   max-width: 260px;
 }
+
+/* ════ 移动端响应式 ═══════════════════════════════ */
+@media (max-width: 767px) {
+  .topbar {
+    padding: 0 10px;
+    min-height: 46px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .title {
+    font-size: 14px;
+  }
+
+  .tabs {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabBtn {
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .body {
+    flex-direction: column;
+  }
+
+  .twoCol {
+    flex-direction: column;
+  }
+
+  .leftCol {
+    width: 100%;
+  }
+
+  .rightCol {
+    min-height: 300px;
+  }
+}

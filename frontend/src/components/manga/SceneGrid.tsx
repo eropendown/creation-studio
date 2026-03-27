@@ -14,8 +14,8 @@ export default function SceneGrid() {
 
   if (!activeOutline) return null
 
-  const o = activeOutline as Record<string, unknown>
-  const scenes = (o.scene_breakdown || []) as Record<string, unknown>[]
+  const o = activeOutline as any
+  const scenes = (o.scene_breakdown || []) as any[]
   const totalScenes  = scenes.length
   const imagesUploaded = scenes.filter(s => s.image_uploaded).length
   const audioReady   = scenes.filter(s => s.audio_path).length
@@ -74,7 +74,7 @@ export default function SceneGrid() {
 function SceneCard({
   scene, outlineId, onUploaded
 }: {
-  scene: Record<string, unknown>
+  scene: any
   outlineId: string
   onUploaded: () => void
 }) {

@@ -98,7 +98,7 @@ export default function PhaseSidebar() {
 }
 
 /* ── 世界观面板 ──────────────────────────────────── */
-function WorldviewPanel({ data }: { data: Record<string, unknown> }) {
+function WorldviewPanel({ data }: { data: any }) {
   const ws  = (data.world_setting || {}) as Record<string, string>
   const pro = (data.protagonist   || {}) as Record<string, string>
   const chars = (data.supporting_characters || []) as Record<string, string>[]
@@ -157,7 +157,7 @@ function WorldviewPanel({ data }: { data: Record<string, unknown> }) {
 }
 
 /* ── 大纲面板 ────────────────────────────────────── */
-function OutlinePanel({ data }: { data: Record<string, unknown> }) {
+function OutlinePanel({ data }: { data: any }) {
   const chapters = (data.chapters || []) as Record<string, unknown>[]
 
   return (
@@ -192,7 +192,7 @@ function OutlinePanel({ data }: { data: Record<string, unknown> }) {
 }
 
 /* ── 章节面板 ────────────────────────────────────── */
-function ChapterPanel({ data }: { data: Record<string, unknown> }) {
+function ChapterPanel({ data }: { data: any }) {
   const scenes = (data.scenes || []) as Record<string, unknown>[]
   const done   = scenes.filter(s => s.status === 'done').length
 

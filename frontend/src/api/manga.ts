@@ -42,6 +42,7 @@ export interface JobStatus {
 }
 
 export interface SystemConfig {
+  config_version?: string
   llm: { api_key: string; base_url: string; model: string; temperature: number; max_tokens: number; context_window: number; provider?: string }
   tts: {
     provider: string; api_key: string; voice_id: string; speed: number; model: string; language: string

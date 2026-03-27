@@ -158,7 +158,7 @@ function WorldviewPanel({ data }: { data: any }) {
 
 /* ── 大纲面板 ────────────────────────────────────── */
 function OutlinePanel({ data }: { data: any }) {
-  const chapters = (data.chapters || []) as Record<string, unknown>[]
+  const chapters = (data.chapters || []) as any[]
 
   return (
     <div className={s.panel}>
@@ -193,7 +193,7 @@ function OutlinePanel({ data }: { data: any }) {
 
 /* ── 章节面板 ────────────────────────────────────── */
 function ChapterPanel({ data }: { data: any }) {
-  const scenes = (data.scenes || []) as Record<string, unknown>[]
+  const scenes = (data.scenes || []) as any[]
   const done   = scenes.filter(s => s.status === 'done').length
 
   return (

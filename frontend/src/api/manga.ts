@@ -43,7 +43,7 @@ export interface JobStatus {
 
 export interface SystemConfig {
   config_version?: string
-  llm: { api_key: string; base_url: string; model: string; temperature: number; max_tokens: number; context_window: number; provider?: string }
+  llm: { api_key: string; base_url: string; model: string; temperature: number; max_tokens: number; context_window: number }
   tts: {
     provider: string; api_key: string; voice_id: string; speed: number; model: string; language: string
     volcengine_app_id: string; volcengine_access_key: string; volcengine_secret_key: string; volcengine_cluster: string

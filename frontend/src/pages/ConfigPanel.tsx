@@ -45,7 +45,6 @@ export default function ConfigPanel() {
   const applyPreset = (p: LlmPreset) => {
     setDraft(d => d ? { ...d, llm: {
       ...d.llm,
-      provider: 'real',
       base_url: p.base_url,
       model: p.model,
       context_window: p.context_window || 128_000,
@@ -105,38 +104,27 @@ export default function ConfigPanel() {
         <div className={s.content}>
           {section === 'llm' && (
             <Section title="🧠 LLM 大语言模型">
-              <Row label="模式">
-                <select
-                  className="select"
-                  value={draft.llm.provider}
-                  onChange={e => setLlm('provider', e.target.value)}
-                >
-                  <option value="real">真实模型</option>
-                </select>
+              <Row label="快速选择">
+                <div className={s.presetGrid}>
+                  {presets.map(p => (
+                    <button
+                      key={p.name}
+                      className={`${s.presetBtn} ${draft.llm.base_url === p.base_url && draft.llm.model === p.model ? s.presetActive : ''}`}
+                      onClick={() => applyPreset(p)}
+                      title={p.description}
+                    >
+                      <span className={s.presetName}>{p.name}</span>
+                    </button>
+                  ))}
+                </div>
               </Row>
 
-              <>
-                  <Row label="快速选择">
-                    <div className={s.presetGrid}>
-                      {presets.map(p => (
-                        <button
-                          key={p.name}
-                          className={`${s.presetBtn} ${draft.llm.base_url === p.base_url && draft.llm.model === p.model ? s.presetActive : ''}`}
-                          onClick={() => applyPreset(p)}
-                          title={p.description}
-                        >
-                          <span className={s.presetName}>{p.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </Row>
-
-                  <Row label="Base URL">
-                    <input
-                      type="text" className="input input-mono"
-                      value={draft.llm.base_url}
-                      onChange={e => setLlm('base_url', e.target.value)}
-                      placeholder="https://api.example.com/v1"
+              <Row label="Base URL">
+                <input
+                  type="text" className="input input-mono"
+                  value={draft.llm.base_url}
+                  onChange={e => setLlm('base_url', e.target.value)}
+                  placeholder="https://api.example.com/v1"
                     />
                   </Row>
                   <Row label="模型名称">
@@ -160,8 +148,6 @@ export default function ConfigPanel() {
                     💡 兼容所有 OpenAI 协议的模型服务。点击上方预设按钮快速配置，
                     或手动填写 Base URL + 模型名称。支持 DeepSeek / 通义千问 / 智谱 / Kimi / 豆包 / Ollama 等。
                   </div>
-                </>
-              )
 
               <Row label={`Temperature: ${draft.llm.temperature}`}>
                 <input

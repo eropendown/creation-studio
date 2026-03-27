@@ -16,13 +16,14 @@ import uuid, time
 # ════════════════════════════════════════════════════
 
 class LLMConfig(BaseModel):
+    model_config = {"extra": "ignore"}  # 兼容旧配置中的 provider 等废弃字段
     api_key:         str   = ""
     base_url:        str   = "https://api.deepseek.com/v1"
     model:           str   = "deepseek-chat"
     temperature:     float = 0.9
     max_tokens:      int   = 4096
     timeout:         int   = 120
-    context_window:  int   = 131_072  # 模型支持的最大 token 上下文窗口
+    context_window:  int   = 131_072
 
 class TTSConfig(BaseModel):
     provider:  str   = "edge_tts"
@@ -102,6 +103,7 @@ class AgentPrompts(BaseModel):
     art_style_prefix: str = ""  # 追加到所有 image_prompt 前
 
 class SystemConfig(BaseModel):
+    model_config = {"extra": "ignore"}  # 兼容旧配置文件中的废弃字段
     config_version: str   = "5.0"
     llm:     LLMConfig    = Field(default_factory=LLMConfig)
     tts:     TTSConfig    = Field(default_factory=TTSConfig)

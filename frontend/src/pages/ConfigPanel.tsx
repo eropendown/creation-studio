@@ -161,7 +161,7 @@ export default function ConfigPanel() {
                     或手动填写 Base URL + 模型名称。支持 DeepSeek / 通义千问 / 智谱 / Kimi / 豆包 / Ollama 等。
                   </div>
                 </>
-              )}
+              )
 
               <Row label={`Temperature: ${draft.llm.temperature}`}>
                 <input

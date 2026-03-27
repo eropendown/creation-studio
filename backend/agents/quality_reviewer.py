@@ -110,9 +110,6 @@ class QualityReviewer:
         prev_chapter_ending: str = "",
     ) -> ChapterReview:
         """评审单个章节"""
-        if self.llm._is_mock:
-            return self._mock_review(chapter_num)
-
         try:
             user_msg = f"## 第{chapter_num}章《{chapter_title}》\n\n"
             if worldview_text:
@@ -169,23 +166,6 @@ class QualityReviewer:
                 chapter_num=chapter_num, overall_score=0, scores=[],
                 strengths=[], issues=["解析失败"], suggestions=[],
             )
-
-    def _mock_review(self, chapter_num: int) -> ChapterReview:
-        return ChapterReview(
-            chapter_num=chapter_num,
-            overall_score=7.5,
-            scores=[
-                QualityScore("情节", 7.5, "情节推进合理，有起伏"),
-                QualityScore("人物", 8.0, "角色行为符合设定"),
-                QualityScore("文笔", 7.0, "语言流畅，部分描写可加强"),
-                QualityScore("节奏", 7.5, "节奏把控较好"),
-                QualityScore("悬念", 7.0, "结尾留有期待"),
-            ],
-            strengths=["情节推进自然", "角色对话有个性"],
-            issues=["部分描写略显冗长"],
-            suggestions=["第三段环境描写可精简，聚焦核心冲突"],
-            character_consistency={},
-        )
 
 
 # ══════════════════════════════════════════════════

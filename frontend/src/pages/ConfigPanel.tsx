@@ -112,12 +112,10 @@ export default function ConfigPanel() {
                   onChange={e => setLlm('provider', e.target.value)}
                 >
                   <option value="real">真实模型</option>
-                  <option value="mock">Mock（测试用）</option>
                 </select>
               </Row>
 
-              {draft.llm.provider !== 'mock' && (
-                <>
+              <>
                   <Row label="快速选择">
                     <div className={s.presetGrid}>
                       {presets.map(p => (
@@ -209,7 +207,6 @@ export default function ConfigPanel() {
                   <option value="openai">OpenAI TTS</option>
                   <option value="elevenlabs">ElevenLabs</option>
                   <option value="volcengine">火山引擎 TTS</option>
-                  <option value="mock">Mock（测试用）</option>
                 </select>
               </Row>
 

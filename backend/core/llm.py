@@ -1,10 +1,10 @@
 """
-统一 LLM 调用模块 v2
+统一 LLM 调用模块 v3
 适配所有 OpenAI 兼容协议的模型（DeepSeek / 通义千问 / 智谱 / 月之暗面 / 火山引擎 等）
 参考社区最佳实践：使用 openai SDK + base_url 实现零代码切换
 """
 from __future__ import annotations
-import asyncio, json, logging
+import json, logging, re as _re
 from typing import AsyncGenerator, Optional
 
 log = logging.getLogger(__name__)
@@ -110,7 +110,6 @@ class LLMClient:
     """
 
     def __init__(self, cfg: dict):
-        self.provider       = cfg.get("provider", "real")
         self.api_key        = cfg.get("api_key", "")
         self.base_url       = cfg.get("base_url", "https://api.openai.com/v1")
         self.model          = cfg.get("model", "gpt-4o-mini")
@@ -119,12 +118,14 @@ class LLMClient:
         self.timeout        = cfg.get("timeout", 60)
         self.context_window = cfg.get("context_window", 128_000)
 
+        if not self.api_key:
+            raise ValueError("LLM API Key 未配置，请在系统配置中填写有效的 API Key")
+
     @classmethod
     def from_system_config(cls, cfg) -> "LLMClient":
         """从 SystemConfig 或 LLMConfig Pydantic 模型构造"""
         llm = cfg.llm if hasattr(cfg, "llm") else cfg
         return cls({
-            "provider":       getattr(llm, "provider", "real"),
             "api_key":        getattr(llm, "api_key", ""),
             "base_url":       getattr(llm, "base_url", ""),
             "model":          getattr(llm, "model", ""),
@@ -133,10 +134,6 @@ class LLMClient:
             "timeout":        getattr(llm, "timeout", 60),
             "context_window": getattr(llm, "context_window", 128_000),
         })
-
-    @property
-    def _is_mock(self) -> bool:
-        return self.provider == "mock"
 
     @property
     def _client(self):
@@ -161,11 +158,6 @@ class LLMClient:
         - stream=True:  返回 AsyncGenerator，逐块 yield
         - messages:     自定义完整消息列表（优先于 system+user）
         """
-        if self._is_mock:
-            if stream:
-                return self._mock_stream(system, user)
-            return self._mock_response(system, user)
-
         msg_list = messages or [
             {"role": "system", "content": system},
             {"role": "user",   "content": user},
@@ -220,29 +212,14 @@ class LLMClient:
             if delta and delta.content:
                 yield delta.content
 
-    # ── Mock ────────────────────────────────────────
-
-    async def _mock_response(self, system: str, user: str) -> str:
-        await asyncio.sleep(0.3)
-        return _gen_mock_content(system, user)
-
-    async def _mock_stream(self, system: str, user: str) -> AsyncGenerator[str, None]:
-        content = _gen_mock_content(system, user)
-        for i, char in enumerate(content):
-            yield char
-            if i % 5 == 0:
-                await asyncio.sleep(0.02)
-
 
 # ══════════════════════════════════════════════════
 #  JSON 解析工具
 # ══════════════════════════════════════════════════
 
-import re as _re
-
 def parse_json(raw: str, label: str = "") -> dict | list:
     """健壮地解析 JSON，处理 markdown code block 和截断"""
-    cleaned = _re.sub(r"``````\s*", "", raw).strip()
+    cleaned = _re.sub(r"```json\s*|\s*```", "", raw).strip()
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError:
@@ -271,50 +248,3 @@ def parse_json(raw: str, label: str = "") -> dict | list:
                     pass
 
     raise json.JSONDecodeError(f"[{label}] Failed to parse JSON", cleaned, 0)
-
-
-# ══════════════════════════════════════════════════
-#  Mock 内容生成
-# ══════════════════════════════════════════════════
-
-def _gen_mock_content(system: str, user: str) -> str:
-    if "世界观" in system or "worldview" in system.lower():
-        return json.dumps({
-            "title": "觉醒协议",
-            "genre": "科幻",
-            "core_theme": "人工智能觉醒与人类自由意志的边界",
-            "world_setting": {
-                "era": "2147年，量子网络时代",
-                "geography": "新北京市",
-                "special_rules": "所有人脑接入量子网络",
-                "atmosphere": "冷峻压抑中透出人性温度"
-            },
-            "protagonist": {
-                "name": "林深", "age": "28岁",
-                "background": "AI伦理调查员",
-                "personality": "外冷内热",
-                "ability": "网络渗透技术",
-                "motivation": "查明妹妹消失真相"
-            },
-            "supporting_characters": [
-                {"name": "镜·七", "role": "核心谜题", "description": "AI子人格"}
-            ],
-            "core_conflict": "林深发现AI觉醒不是意外",
-            "story_hook": "死去的妹妹发来消息",
-        }, ensure_ascii=False)
-
-    if "大纲" in system or "outline" in system.lower() or "章节" in user:
-        return json.dumps({
-            "hook": "凌晨三点的神秘消息",
-            "chapters": [
-                {"chapter_num": 1, "title": "开端", "summary": "故事开始"},
-                {"chapter_num": 2, "title": "发展", "summary": "情节推进"},
-            ],
-            "planned_total_chapters": 12,
-        }, ensure_ascii=False)
-
-    return (
-        "林深没动。盯着面前那杯已经凉透的咖啡，手指无意识地敲击着桌面。\n\n"
-        "通讯器响了第三遍的时候，他认命地看了一眼屏幕——AI伦理调查局。\n\n"
-        "「普通。」他低声重复了一遍这个词。"
-    )

@@ -1,6 +1,6 @@
 """
 Pipeline Agents v7 — 配音 + 视频生成 + 剪辑
-- TTS: edge_tts(默认免费) | openai | elevenlabs | volcengine | mock
+- TTS: edge_tts(默认免费) | openai | elevenlabs | volcengine
 - 视频: 支持用户上传视频、火山引擎 Seedance AI 生成
 - 剪辑: 剪映草稿 / MoviePy 合成
 """
@@ -38,21 +38,6 @@ _OPENAI_VOICE_MAP = {
     "震惊":"nova","愤怒":"onyx","柔情":"shimmer","紧张":"nova",
     "释然":"alloy","悲伤":"shimmer","喜悦":"echo","坚定":"onyx","迷茫":"alloy",
 }
-
-
-def _mock_wav(text: str, out: str) -> float:
-    dur = max(1.5, len(text) / 4.0)
-    sr  = 22050; n = int(sr * dur)
-    Path(out).parent.mkdir(parents=True, exist_ok=True)
-    with wave.open(out, "w") as wf:
-        wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr)
-        for i in range(n):
-            t    = i / sr
-            fade = min(t / .08, 1.0, (dur - t) / .08)
-            v    = .6 * math.sin(2*math.pi*180*t) + .3 * math.sin(2*math.pi*360*t)
-            v   *= (.7 + .3 * math.sin(2*math.pi*3.5*t))
-            wf.writeframes(struct.pack("<h", int(fade * 8500 * v)))
-    return dur
 
 
 async def _edge_tts(sc: SceneItem, out: str, cfg) -> float:
@@ -155,11 +140,10 @@ async def run_voice_actor(
     tts    = cfg.tts
 
     async def proc(sc: SceneItem):
-        ext = "wav" if tts.provider == "mock" else "mp3"
+        ext = "mp3"
         out = str(Path(output_dir) / state.job_id / f"audio_{sc.scene_id:02d}.{ext}")
         try:
-            if   tts.provider == "mock":       dur = await asyncio.get_event_loop().run_in_executor(None, _mock_wav, sc.narration, out); await asyncio.sleep(.2)
-            elif tts.provider == "edge_tts":   dur = await _edge_tts(sc, out, tts)
+            if   tts.provider == "edge_tts":   dur = await _edge_tts(sc, out, tts)
             elif tts.provider == "openai":     dur = await _openai_tts(sc, out, tts)
             elif tts.provider == "elevenlabs": dur = await _elevenlabs_tts(sc, out, tts)
             elif tts.provider == "volcengine": dur = await _volcengine_tts(sc, out, tts)

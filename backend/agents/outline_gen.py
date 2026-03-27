@@ -256,11 +256,8 @@ async def generate_outline(
 ) -> ScriptOutline:
     """从简介生成大纲"""
     if glog is None: glog = []
-    if cfg.llm.provider == "mock":
-        raise ValueError(
-            "LLM 提供商设置为 Mock，无法生成真实大纲。\n"
-            "请前往「系统配置 → LLM 大模型」将提供商改为 openai 或 deepseek，并填写有效的 API Key。"
-        )
+    if not cfg.llm.api_key:
+        raise ValueError("LLM API Key 未配置，请在系统配置中填写有效的 API Key。")
 
     # 步骤1：分析
     analysis = await _step1_analyze(f"类型：{genre}\n画风：{style}\n简介：{synopsis}", cfg, glog)
@@ -279,11 +276,8 @@ async def generate_outline(
 async def import_novel(req: NovelImportRequest, cfg: SystemConfig) -> ScriptOutline:
     """从小说文本导入生成大纲"""
     glog = []
-    if cfg.llm.provider == "mock":
-        raise ValueError(
-            "LLM 提供商设置为 Mock，无法生成真实大纲。\n"
-            "请前往「系统配置 → LLM 大模型」将提供商改为 openai 或 deepseek，并填写有效的 API Key。"
-        )
+    if not cfg.llm.api_key:
+        raise ValueError("LLM API Key 未配置，请在系统配置中填写有效的 API Key。")
 
     # 截取文本（过长则智能截取重点段落）
     text = req.novel_text

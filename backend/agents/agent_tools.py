@@ -241,18 +241,6 @@ async def knowledge_check(claim: str, llm_cfg: dict) -> ToolResult:
     from core.llm import LLMClient
     llm = LLMClient(llm_cfg)
 
-    if llm._is_mock:
-        content = (
-            f"## 核查结论\n? 无法确认（Mock模式）\n\n"
-            f"## 事实说明\n当前为 Mock 模式，无法进行实际知识核查。\n"
-            f"待核查内容：{claim}\n\n"
-            f"## 写作建议\n在 Mock 模式下，请自行核实相关事实后再写作。"
-        )
-        return ToolResult(
-            tool="knowledge_check", query=claim, success=True,
-            content=content, summary="Mock模式，跳过核查",
-        )
-
     try:
         content = await llm.chat(
             system,

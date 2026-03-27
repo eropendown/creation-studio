@@ -296,7 +296,6 @@ def _llm_cfg() -> dict:
     """统一构造 LLM 配置字典，供所有 Agent 使用"""
     cfg = get_config()
     return {
-        "provider":       cfg.llm.provider,
         "api_key":        cfg.llm.api_key,
         "base_url":       cfg.llm.base_url,
         "model":          cfg.llm.model,

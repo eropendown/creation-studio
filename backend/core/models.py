@@ -16,14 +16,13 @@ import uuid, time
 # ════════════════════════════════════════════════════
 
 class LLMConfig(BaseModel):
-    provider:        str   = "mock"
     api_key:         str   = ""
-    base_url:        str   = "https://api.openai.com/v1"
-    model:           str   = "gpt-4o-mini"
+    base_url:        str   = "https://api.deepseek.com/v1"
+    model:           str   = "deepseek-chat"
     temperature:     float = 0.9
     max_tokens:      int   = 4096
     timeout:         int   = 120
-    context_window:  int   = 128_000  # 模型支持的最大 token 上下文窗口
+    context_window:  int   = 131_072  # 模型支持的最大 token 上下文窗口
 
 class TTSConfig(BaseModel):
     provider:  str   = "edge_tts"

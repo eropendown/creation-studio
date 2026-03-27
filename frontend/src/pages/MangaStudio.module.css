@@ -2,28 +2,29 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   background: var(--paper-1);
-  position: relative;
+  overflow: hidden;
   z-index: 1;
+  position: relative;
 }
 
-/* ── 顶栏 ──────────────────────────────────────── */
+/* ── 顶栏 ─────────────────────────────────────────── */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  height: 52px;
+  height: 48px;
   background: var(--paper-2);
   border-bottom: var(--border-sm);
   flex-shrink: 0;
-  gap: 16px;
 }
 
 .topbarLeft {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -37,8 +38,8 @@
 }
 
 .activeTitle {
-  font-family: var(--font-serif);
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   color: var(--ink-2);
   border-left: var(--border-dim);
   padding-left: 10px;
@@ -48,7 +49,7 @@
   max-width: 200px;
 }
 
-/* ── Tabs ──────────────────────────────────────── */
+/* Tabs */
 .tabs {
   display: flex;
   gap: 2px;
@@ -91,17 +92,15 @@
 
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
 
-/* ── 主体 ──────────────────────────────────────── */
+/* ── 主体 ─────────────────────────────────────────── */
 .body {
   flex: 1;
   overflow: hidden;
-  display: flex;
 }
 
 .twoCol {
-  flex: 1;
   display: flex;
-  overflow: hidden;
+  height: 100%;
 }
 
 .leftCol {
@@ -116,9 +115,10 @@
   flex: 1;
   overflow-y: auto;
   background: var(--paper-1);
+  min-width: 0;
 }
 
-/* ── 占位符 ────────────────────────────────────── */
+/* ── 占位符 ───────────────────────────────────────── */
 .placeholder {
   display: flex;
   flex-direction: column;
@@ -131,48 +131,34 @@
 }
 
 .placeholderIcon { font-size: 48px; opacity: .25; }
+.placeholderTitle { font-family: var(--font-serif); font-size: 16px; font-weight: 700; color: var(--ink-1); }
+.placeholderSub { font-size: 13px; color: var(--ink-3); line-height: 1.7; max-width: 260px; }
 
-.placeholderTitle {
-  font-family: var(--font-serif);
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ink-1);
-}
-
-.placeholderSub {
-  font-size: 13px;
-  color: var(--ink-3);
-  line-height: 1.7;
-  max-width: 260px;
-}
-
-/* ════ 移动端响应式 ═══════════════════════════════ */
+/* ════ 移动端 ═════════════════════════════════════ */
 @media (max-width: 767px) {
+  .root {
+    padding-bottom: var(--nav-height);
+  }
+
   .topbar {
     padding: 0 10px;
-    min-height: 46px;
-    flex-wrap: wrap;
-    gap: 4px;
+    height: 42px;
+    gap: 8px;
+    overflow-x: auto;
   }
 
-  .title {
-    font-size: 14px;
-  }
+  .topbarLeft { gap: 8px; }
+  .title { font-size: 13px; }
+  .activeTitle { display: none; }
 
   .tabs {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    flex-shrink: 0;
+    gap: 2px;
   }
 
   .tabBtn {
-    white-space: nowrap;
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .body {
-    flex-direction: column;
+    padding: 4px 10px;
+    font-size: 9px;
   }
 
   .twoCol {
@@ -181,9 +167,16 @@
 
   .leftCol {
     width: 100%;
+    border-right: none;
+    border-bottom: var(--border-dim);
+    max-height: 50%;
   }
 
   .rightCol {
-    min-height: 300px;
+    min-height: 200px;
   }
+
+  .placeholder { padding: 20px; gap: 8px; }
+  .placeholderIcon { font-size: 28px; }
+  .placeholderTitle { font-size: 14px; }
 }

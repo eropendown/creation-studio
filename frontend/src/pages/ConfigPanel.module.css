@@ -2,9 +2,11 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   background: var(--paper-1);
-  position: relative;
+  overflow: hidden;
   z-index: 1;
+  position: relative;
 }
 
 /* ── 顶栏 ──────────────────────────────────────── */
@@ -244,11 +246,15 @@
   font-weight: 600;
 }
 
-/* ════ 移动端响应式 ═══════════════════════════════ */
+/* ════ 移动端 ═════════════════════════════════════ */
 @media (max-width: 767px) {
+  .root {
+    padding-bottom: var(--nav-height);
+  }
+
   .topbar {
     padding: 0 10px;
-    min-height: 46px;
+    height: 42px;
   }
 
   .body {
@@ -262,13 +268,18 @@
     -webkit-overflow-scrolling: touch;
     border-right: none;
     border-bottom: var(--border);
-    position: relative;
-    height: auto;
+    padding: 6px 8px;
+    gap: 2px;
   }
 
-  .navBtn {
+  .navItem {
     white-space: nowrap;
-    padding: 8px 14px;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  .navActive::before {
+    display: none;
   }
 
   .content {
@@ -282,7 +293,6 @@
   }
 
   .rowLabel {
-    min-width: 0;
     width: 100%;
   }
 
@@ -290,8 +300,9 @@
     width: 100%;
   }
 
-  .presetGrid {
-    gap: 4px;
+  .sectionBody {
+    padding: 12px;
+    gap: 10px;
   }
 
   .presetBtn {

@@ -2,9 +2,11 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   background: var(--paper-1);
   position: relative;
   z-index: 1;
+  overflow: hidden;
 }
 
 /* ── 顶栏 ─────────────────────────────────────────── */
@@ -13,7 +15,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  height: 52px;
+  height: 48px;
   background: var(--paper-2);
   border-bottom: var(--border-sm);
   flex-shrink: 0;
@@ -57,7 +59,7 @@
   flex: 1;
   display: flex;
   overflow: hidden;
-  position: relative;
+  min-height: 0;
 }
 
 /* ── 聊天列 ───────────────────────────────────────── */
@@ -66,13 +68,14 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
   border-right: var(--border-dim);
 }
 
 /* ── 输入区 ───────────────────────────────────────── */
 .inputArea {
   flex-shrink: 0;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: var(--paper-2);
   border-top: var(--border-sm);
 }
@@ -85,12 +88,13 @@
 
 .chatInput {
   flex: 1;
+  min-width: 0;
   resize: none;
   font-family: var(--font-serif);
   font-size: 14px;
   line-height: 1.7;
-  min-height: 72px;
-  max-height: 160px;
+  min-height: 64px;
+  max-height: 140px;
 }
 
 .chatInput:disabled {
@@ -100,9 +104,8 @@
 
 .sendBtn {
   flex-shrink: 0;
-  align-self: flex-end;
-  height: 40px;
-  padding: 0 20px;
+  height: 38px;
+  padding: 0 18px;
 }
 
 /* ── 右侧面板 ─────────────────────────────────────── */
@@ -157,8 +160,6 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 /* ── 欢迎屏 ───────────────────────────────────────── */
@@ -168,16 +169,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 28px;
+  padding: 24px 20px;
   text-align: center;
-  gap: 14px;
+  gap: 12px;
+  overflow-y: auto;
 }
 
-.welcomeIcon { font-size: 40px; opacity: .35; }
+.welcomeIcon { font-size: 36px; opacity: .35; }
 
 .welcomeTitle {
   font-family: var(--font-serif);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 900;
   color: var(--ink-0);
 }
@@ -195,7 +197,7 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .starterLabel {
@@ -227,33 +229,13 @@
   box-shadow: 3px 3px 0 var(--red);
   transform: translate(-1px, -1px);
 }
-.quickReplies {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.quickBtn {
-  font-family: var(--font-serif);
-  font-size: 12px;
-  letter-spacing: 0;
-  text-transform: none;
-  padding: 4px 12px;
-  color: var(--ink-1);
-}
-
-.quickBtn:hover {
-  background: var(--paper-3);
-  border-color: var(--ink-2);
-}
 
 /* ── 快捷回复 ─────────────────────────────────────── */
 .quickReplies {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .quickBtn {
@@ -269,33 +251,67 @@
   background: var(--paper-3);
   border-color: var(--ink-2);
 }
-/* ════ 移动端响应式 ═══════════════════════════════ */
+
+/* ══════════════════════════════════════════════════
+   移动端适配（< 768px）
+   ══════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   .topbar {
     padding: 0 10px;
-    min-height: 46px;
+    height: 42px;
   }
 
   .topbarTitle {
-    font-size: 14px;
+    font-size: 13px;
+  }
+
+  .phaseBadge {
+    display: none;
   }
 
   .body {
-    flex-direction: column;
+    /* 输入区改为固定定位后，body 只包含聊天区 */
     position: relative;
   }
 
   .chatCol {
     border-right: none;
-    flex: 1;
-    min-height: 0;
+    /* 聊天区占满剩余空间，底部为输入区留空 */
+    padding-bottom: 0;
   }
 
+  /* 输入区固定在底部导航上方 */
+  .inputArea {
+    position: fixed;
+    bottom: calc(var(--nav-height) + var(--safe-bottom));
+    left: 0;
+    right: 0;
+    z-index: 850;
+    padding: 6px 8px;
+    background: var(--paper-2);
+    border-top: var(--border-sm);
+    border-bottom: 1px solid var(--ink-4);
+  }
+
+  .chatInput {
+    min-height: 40px;
+    max-height: 80px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .sendBtn {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 10px;
+  }
+
+  /* 右侧面板滑出抽屉 */
   .rightPanel {
     position: fixed;
     top: 0;
     right: 0;
-    bottom: 64px;
+    bottom: var(--nav-height);
     width: 85vw;
     max-width: 340px;
     z-index: 800;
@@ -309,21 +325,15 @@
     transform: translateX(0);
   }
 
-  .inputArea {
-    padding: 6px 8px;
+  /* 欢迎屏紧凑 */
+  .welcome {
+    padding: 16px 12px;
+    gap: 10px;
   }
 
-  .chatInput {
-    min-height: 56px;
-  }
-
-  .welcomeDesc {
-    font-size: 13px;
-    padding: 0 16px;
-  }
-
-  .quickReplies {
-    flex-wrap: wrap;
-    gap: 4px;
-  }
+  .welcomeIcon { font-size: 28px; }
+  .welcomeTitle { font-size: 16px; }
+  .welcomeDesc { font-size: 12px; }
+  .starterBtn { padding: 8px 10px; font-size: 12px; }
+  .quickReplies { gap: 4px; margin-top: 4px; }
 }

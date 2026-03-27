@@ -16,14 +16,14 @@ import uuid, time
 # ════════════════════════════════════════════════════
 
 class LLMConfig(BaseModel):
-    provider:    str   = "mock"
-    api_key:     str   = ""
-    base_url:    str   = "https://api.openai.com/v1"
-    model:       str   = "gpt-4o-mini"
-    temperature: float = 0.9
-    # 单次最大 token；分批时每批 scene_count<=4 来保证不截断
-    max_tokens:  int   = 4096
-    timeout:     int   = 120
+    provider:        str   = "mock"
+    api_key:         str   = ""
+    base_url:        str   = "https://api.openai.com/v1"
+    model:           str   = "gpt-4o-mini"
+    temperature:     float = 0.9
+    max_tokens:      int   = 4096
+    timeout:         int   = 120
+    context_window:  int   = 128_000  # 模型支持的最大 token 上下文窗口
 
 class TTSConfig(BaseModel):
     provider:  str   = "edge_tts"

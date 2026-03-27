@@ -9,6 +9,8 @@ interface LlmPreset {
   name: string
   base_url: string
   model: string
+  context_window: number
+  max_tokens: number
   description: string
 }
 
@@ -41,7 +43,14 @@ export default function ConfigPanel() {
   const setPrompt = (k: string, v: string) => setDraft(d => d ? { ...d, prompts: { ...d.prompts, [k]: v } } : d)
 
   const applyPreset = (p: LlmPreset) => {
-    setDraft(d => d ? { ...d, llm: { ...d.llm, provider: 'real', base_url: p.base_url, model: p.model } } : d)
+    setDraft(d => d ? { ...d, llm: {
+      ...d.llm,
+      provider: 'real',
+      base_url: p.base_url,
+      model: p.model,
+      context_window: p.context_window || 128_000,
+      max_tokens: p.max_tokens || 4096,
+    } } : d)
   }
 
   if (!draft) {
@@ -164,9 +173,22 @@ export default function ConfigPanel() {
                   className={s.range}
                 />
               </Row>
-              <Row label={`Max Tokens: ${draft.llm.max_tokens}`}>
+              <Row label={`上下文窗口: ${(draft.llm.context_window / 1000).toFixed(0)}K`}>
+                <select
+                  className="select"
+                  value={draft.llm.context_window}
+                  onChange={e => setLlm('context_window', parseInt(e.target.value, 10))}
+                >
+                  <option value={1_000_000}>1M token（百万级，如 qwen-long / glm-4-long）</option>
+                  <option value={262_144}>256K token（如 Kimi K2）</option>
+                  <option value={131_072}>128K token（如 DeepSeek / Qwen-Plus）</option>
+                  <option value={32_768}>32K token（如 豆包）</option>
+                  <option value={8_192}>8K token（小模型）</option>
+                </select>
+              </Row>
+              <Row label={`单次输出上限: ${draft.llm.max_tokens}`}>
                 <input
-                  type="range" min="512" max="8192" step="256"
+                  type="range" min="512" max="16384" step="256"
                   value={draft.llm.max_tokens}
                   onChange={e => setLlm('max_tokens', parseInt(e.target.value, 10))}
                   className={s.range}

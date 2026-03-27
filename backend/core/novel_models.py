@@ -215,8 +215,25 @@ class NovelSession(BaseModel):
 
     @property
     def llm_messages(self) -> List[dict]:
-        """转换为 OpenAI messages 格式（最近 20 条，避免 token 超限）"""
-        recent = self.messages[-20:]
+        """转换为 OpenAI messages 格式，根据上下文窗口动态调整保留条数"""
+        # 默认 20 条（128K 以下模型），长上下文模型可保留更多
+        max_msgs = 20
+        recent = self.messages[-max_msgs:]
+        return [{"role": m.role.value, "content": m.content} for m in recent
+                if m.role in (MessageRole.USER, MessageRole.ASSISTANT)]
+
+    def llm_messages_for_context(self, context_window: int = 128_000) -> List[dict]:
+        """根据模型上下文窗口大小返回适量的历史消息"""
+        if context_window >= 1_000_000:
+            max_msgs = 50   # 百万token级：保留50条
+        elif context_window >= 256_000:
+            max_msgs = 30   # 256K级：保留30条
+        elif context_window >= 128_000:
+            max_msgs = 20   # 128K级：保留20条
+        else:
+            max_msgs = 10   # 小模型：保留10条
+
+        recent = self.messages[-max_msgs:]
         return [{"role": m.role.value, "content": m.content} for m in recent
                 if m.role in (MessageRole.USER, MessageRole.ASSISTANT)]
 
